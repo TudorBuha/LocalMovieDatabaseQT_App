@@ -118,50 +118,52 @@ int Gui::PrintUserMenu()
 
 int Gui::addMovie()
 {
-	QDialog* popup = new QDialog();
-	QWidget window{ popup };
-	window.setStyleSheet("background-color: #186A3B; color: white;");
+	QDialog popup;
+	popup.setStyleSheet("background-color: #186A3B; color: white;");
 	QFormLayout* formLayout = new QFormLayout{};
+
 	QLabel label("Add a new movie");
 	label.setAlignment(Qt::AlignCenter);
-	QLabel titleLabel("Title ");
-	QLabel genreLabel("Genre ");
-	QLabel yearOfReleaseLabel("Year of release ");
-	QLabel nrLikesLabel("Likes ");
-	QLabel linkLabel("Link ");
 
 	QLineEdit* titleInput = new QLineEdit();
 	titleInput->setObjectName("title");
+	QLabel titleLabel("Title ");
 	titleLabel.setBuddy(titleInput);
 
 	QLineEdit* genreInput = new QLineEdit();
 	genreInput->setObjectName("genre");
+	QLabel genreLabel("Genre ");
 	genreLabel.setBuddy(genreInput);
 
-	QLineEdit* yeaOfReleaseInput = new QLineEdit();
-	yeaOfReleaseInput->setObjectName("year of release");
-	yearOfReleaseLabel.setBuddy(yeaOfReleaseInput);
+	QLineEdit* yearOfReleaseInput = new QLineEdit();
+	yearOfReleaseInput->setObjectName("yearOfRelease");
+	QLabel yearOfReleaseLabel("Year of release ");
+	yearOfReleaseLabel.setBuddy(yearOfReleaseInput);
 
 	QLineEdit* likesInput = new QLineEdit();
 	likesInput->setObjectName("likes");
+	QLabel nrLikesLabel("Likes ");
 	nrLikesLabel.setBuddy(likesInput);
 
 	QLineEdit* linkInput = new QLineEdit();
 	linkInput->setObjectName("link");
+	QLabel linkLabel("Link ");
 	linkLabel.setBuddy(linkInput);
 
 	formLayout->addRow(&label);
 	formLayout->addRow(&titleLabel, titleInput);
 	formLayout->addRow(&genreLabel, genreInput);
-	formLayout->addRow(&yearOfReleaseLabel, yeaOfReleaseInput);
+	formLayout->addRow(&yearOfReleaseLabel, yearOfReleaseInput);
 	formLayout->addRow(&nrLikesLabel, likesInput);
 	formLayout->addRow(&linkLabel, linkInput);
-	QPushButton addButton("Add");
-	formLayout->addRow(&addButton);
-	connect(&addButton, &QPushButton::clicked, this, &Gui::on_addAdminButton_clicked);
-	window.setLayout(formLayout);
-	window.show();
-	return popup->exec();
+
+	QPushButton* addButton = new QPushButton("Add");
+	formLayout->addRow(addButton);
+
+	connect(addButton, &QPushButton::clicked, this, &Gui::on_addAdminButton_clicked);
+
+	popup.setLayout(formLayout);
+	return popup.exec();
 
 }
 
@@ -512,26 +514,58 @@ void Gui::displayError(const char* message)
 
 void Gui::on_addAdminButton_clicked()
 {
-	std::string title = sender()->parent()->findChild<QLineEdit*>("title")->text().toStdString();
-	std::string genre = sender()->parent()->findChild<QLineEdit*>("genre")->text().toStdString();
-	std::string yearOfRelease = sender()->parent()->findChild<QLineEdit*>("yearOfRelease")->text().toStdString();
-	std::string likes = sender()->parent()->findChild<QLineEdit*>("likes")->text().toStdString();
-	std::string link = sender()->parent()->findChild<QLineEdit*>("link")->text().toStdString();
+	QLineEdit* titleInput = qobject_cast<QLineEdit*>(sender()->parent()->findChild<QLineEdit*>("title"));
+	QLineEdit* genreInput = qobject_cast<QLineEdit*>(sender()->parent()->findChild<QLineEdit*>("genre"));
+	QLineEdit* yearOfReleaseInput = qobject_cast<QLineEdit*>(sender()->parent()->findChild<QLineEdit*>("yearOfRelease"));
+	QLineEdit* likesInput = qobject_cast<QLineEdit*>(sender()->parent()->findChild<QLineEdit*>("likes"));
+	QLineEdit* linkInput = qobject_cast<QLineEdit*>(sender()->parent()->findChild<QLineEdit*>("link"));
+
+	if (!titleInput || !genreInput || !yearOfReleaseInput || !likesInput || !linkInput)
+	{
+		displayError("Error retrieving input fields");
+		return;
+	}
+
+	std::string title = titleInput->text().toStdString();
+	std::string genre = genreInput->text().toStdString();
+	std::string yearOfReleaseStr = yearOfReleaseInput->text().toStdString();
+	std::string likesStr = likesInput->text().toStdString();
+	std::string link = linkInput->text().toStdString();
+
+	// Validate yearOfRelease and likes
+	int yearOfRelease;
+	int likes;
+
+	try {
+		yearOfRelease = std::stoi(yearOfReleaseStr);
+	}
+	catch (const std::exception& e) {
+		displayError("Invalid input for Year of Release. Please enter a valid integer.");
+		return;
+	}
+
+	try {
+		likes = std::stoi(likesStr);
+	}
+	catch (const std::exception& e) {
+		displayError("Invalid input for Likes. Please enter a valid integer.");
+		return;
+	}
 
 	try
 	{
-		adminService.addMovie(title, genre, stoi(yearOfRelease), stoi(likes), link);
+		adminService.addMovie(title, genre, yearOfRelease, likes, link);
 		std::cout << "Successful add\n";
-
 	}
 	catch (const std::exception& e)
 	{
 		displayError(e.what());
-		QWidget* parentWindow = qobject_cast<QWidget*>(sender()->parent());
-		parentWindow->close();
+		return;
 	}
-	QWidget* parentWindow = qobject_cast<QWidget*>(sender()->parent()->parent());
-	parentWindow->close();
+
+	QDialog* parentDialog = qobject_cast<QDialog*>(sender()->parent()->parent());
+	if (parentDialog)
+		parentDialog->close();
 }
 
 void Gui::on_removeAdminButton_clicked()
