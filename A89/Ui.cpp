@@ -215,7 +215,7 @@ void UI::searchMovieByGenreUI()
 		Movie currentMovie = searchedMovies[currentMovieIndex];
 		cout << "\n#" << currentMovieIndex + 1 << std::endl;
 		cout << currentMovie.toString() << '\n';
-
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////
 		string command = "start " + currentMovie.getLink();
 		system(command.c_str());
 

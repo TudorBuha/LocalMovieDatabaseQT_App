@@ -374,7 +374,6 @@ void Gui::detailsOfMovie(const Movie& movie, QLabel& movieLabel)
 	QString yearOfRelease = QString::number(movie.getYearOfRelease());
 	QString likes = QString::number(movie.getNrLikes());
 	QString link = QString::fromStdString(movie.getLink());
-	/////////////////////////////////////////////////////////////////////////////////
 	QString message = QString("<b>Title:</b> %1<br>"
 		"<b>Genre:</b> %2<br>"
 		"<b>YearOfRelease:</b> %3<br>"
@@ -422,6 +421,19 @@ int Gui::removeMovieFromWatchlist()
 		std::string genre = sender()->parent()->findChild<QLineEdit*>("genre")->text().toStdString();
 		try
 		{
+			///////////
+			// Ask the user if they want to leave a like
+			QMessageBox::StandardButton reply;
+			reply = QMessageBox::question(nullptr, "Leave a Like", "Do you want to leave a like for this movie?",
+				QMessageBox::Yes | QMessageBox::No);
+			if (reply == QMessageBox::Yes) {
+				// Call the increase_like function here
+				 adminService.increaseLikes(title, genre);
+			}
+
+
+
+			///////////
 			userService.removeMovieFromWatchList(title, genre);
 			std::cout << "Successful remove\n";
 
