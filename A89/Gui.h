@@ -49,4 +49,6 @@ private slots:
 	void handleUserMode();
 	void handleAdminMode();
 
+	void UndoButtonClicked();
+	void RedoButtonClicked();
 };

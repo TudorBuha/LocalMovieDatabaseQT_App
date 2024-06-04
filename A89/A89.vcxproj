@@ -93,8 +93,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Movie.cpp" />
+    <ClCompile Include="MovieListModel.cpp" />
     <ClCompile Include="Repository.cpp" />
     <ClCompile Include="Ui.cpp" />
+    <ClCompile Include="UndoRedo.cpp" />
     <ClCompile Include="UserService.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Watchlist.cpp" />
@@ -117,8 +119,10 @@
     <ClInclude Include="FileWatchlist.h" />
     <ClInclude Include="HtmlWatchlist.h" />
     <ClInclude Include="Movie.h" />
+    <QtMoc Include="MovieListModel.h" />
     <ClInclude Include="Repository.h" />
     <ClInclude Include="Ui.h" />
+    <ClInclude Include="UndoRedo.h" />
     <ClInclude Include="UserService.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Watchlist.h" />

@@ -76,6 +76,12 @@
     <ClCompile Include="Watchlist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UndoRedo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MovieListModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AdminService.h">
@@ -111,9 +117,15 @@
     <ClInclude Include="Watchlist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="UndoRedo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Gui.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="MovieListModel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

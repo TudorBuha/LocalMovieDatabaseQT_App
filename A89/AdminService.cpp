@@ -10,7 +10,10 @@ AdminService::AdminService(Repository initialMoviesRepository) : moviesRepositor
 void AdminService::addMovie(string Title, string Genre, int YearOfRelease, int NrLikes, string Link)
 {
 	Movie movieToAdd{ Title, Genre, YearOfRelease, NrLikes, Link };
-	return this->moviesRepository.addMovie(movieToAdd);
+	this->moviesRepository.addMovie(movieToAdd);
+
+	AddCommand* addCommand = new AddCommand(&this->moviesRepository, movieToAdd);
+	this->undoRedo.addOperation(addCommand);
 }
 
 /*
@@ -24,7 +27,10 @@ void AdminService::removeMovie(string Title, string Genre)
 	string Link = "";
 	Movie movieToRemove{ Title, Genre, YearOfRelease, NrLikes, Link };
 	int indexOfMovieToRemove = this->moviesRepository.getMoviePosition(movieToRemove);
-	return this->moviesRepository.removeMovie(indexOfMovieToRemove);
+	this->moviesRepository.removeMovie(indexOfMovieToRemove);
+
+	RemoveCommand* removeCommand = new RemoveCommand(&this->moviesRepository, movieToRemove);
+	this->undoRedo.addOperation(removeCommand);
 }
 
 /*
@@ -32,13 +38,14 @@ void AdminService::removeMovie(string Title, string Genre)
 */
 void AdminService::updateMovie(string Title, string Genre, string NewTitle, string NewGenre, int NewYearOfRelease, int NewNrLikes, string NewLink)
 {
-	//int yearOfRelease = 0;
-	//int NrLikes = 0;
-	//string Link = "";
+
 	Movie movieToUpdate{ Title, Genre, 0, 0, "" };
 	Movie updatedMovie{ NewTitle, NewGenre, NewYearOfRelease, NewNrLikes, NewLink };
 	int indexOfMovieToUpdate = this->moviesRepository.getMoviePosition(movieToUpdate);
-	return this->moviesRepository.updateMovie(indexOfMovieToUpdate, updatedMovie);
+	this->moviesRepository.updateMovie(indexOfMovieToUpdate, updatedMovie);
+
+	UpdateCommand* updateCommand = new UpdateCommand(&this->moviesRepository, movieToUpdate, updatedMovie);
+	this->undoRedo.addOperation(updateCommand);
 }
 
 /*
@@ -78,4 +85,24 @@ void AdminService::initialiseAllMovies()
 	this->addMovie("The Matrix", "Action", 1999, 62, "https://www.imdb.com/title/tt0133093/");
 }
 
+void AdminService::executeUndo()
+{
+	this->undoRedo.executeUndo();
+}
 
+void AdminService::executeRedo()
+{
+	this->undoRedo.executeRedo();
+}
+
+/*
+void AdministratorMode::executeUndo()
+{
+	this->undoRedo.executeUndo();
+}
+
+void AdministratorMode::executeRedo()
+{
+	this->undoRedo.executeRedo();
+}
+*/

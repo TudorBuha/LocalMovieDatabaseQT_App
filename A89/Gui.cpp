@@ -15,6 +15,15 @@
 #include <iostream>
 #include <QGroupBox>
 #include <qlabel.h>
+#include <qshortcut.h>
+#include "Exception.h"
+#include <QTableView>
+#include <QHeaderView>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QMessageBox>
+#include "MovieListModel.h"
+
 
 Gui::Gui(AdminService initialAdminService, UserService initialUserService, int initialArgumentCount, char** initialArgumentVector)
 	: adminService{ initialAdminService }, userService{ initialUserService }, argumentCount{ initialArgumentCount }, argumentVector{ initialArgumentVector }
@@ -65,13 +74,30 @@ int Gui::PrintAdminMenu()
 	QListWidget list;
 	QLabel title("Admin mode");
 	title.setAlignment(Qt::AlignCenter);
+
 	QListWidgetItem* element1 = new QListWidgetItem("1. Add a new movie", &list);
 	QListWidgetItem* element2 = new QListWidgetItem("2. Delete a movie", &list);
 	QListWidgetItem* element3 = new QListWidgetItem("3. Update a movie", &list);
 	QListWidgetItem* element4 = new QListWidgetItem("4. Display all movies", &list);
+
+	QPushButton* undoButton = new QPushButton("Undo");
+	QPushButton* redoButton = new QPushButton("Redo");
+
 	layout.addWidget(&title);
 	layout.addWidget(&list);
+	layout.addWidget(undoButton);
+	layout.addWidget(redoButton);
 	window.setLayout(&layout);
+
+	connect(undoButton, &QPushButton::clicked, this, &Gui::UndoButtonClicked);
+	connect(redoButton, &QPushButton::clicked, this, &Gui::RedoButtonClicked);
+
+	QShortcut* undoShortcut = new QShortcut(QKeySequence("Ctrl+Z"), &window);
+	QShortcut* redoShortcut = new QShortcut(QKeySequence("Ctrl+Y"), &window);
+
+	QObject::connect(undoShortcut, &QShortcut::activated, this, &Gui::UndoButtonClicked);
+	QObject::connect(redoShortcut, &QShortcut::activated, this, &Gui::RedoButtonClicked);
+
 	window.show();
 	window.resize(500, 450);
 	connect(&list, &QListWidget::itemClicked, this, &Gui::handleAdminMode);
@@ -452,6 +478,39 @@ int Gui::removeMovieFromWatchlist()
 	return popup->exec();
 }
 
+
+int Gui::displayWatchlist()
+{
+	QDialog* popup = new QDialog();
+	QVBoxLayout* layout = new QVBoxLayout;
+
+	std::vector<Movie> movies = this->userService.getWatchList()->getAllMovies();
+
+	MovieListModel* model = new MovieListModel;
+
+	model->setMovies(movies);
+	QTableView* view = new QTableView;
+	view->setModel(model);
+	view->setStyleSheet("background-color: #186A3B; color: white; font-size: 15px;");
+	view->horizontalHeader()->setStyleSheet(
+		"QHeaderView::section {"
+		"background-color:  #186A3B; color: white; padding: 4px; }"
+	);
+	view->verticalHeader()->setStyleSheet(
+		"QHeaderView::section {"
+		"background-color: #186A3B; color: white; padding: 4px; }"
+	);
+
+
+	layout->addWidget(view);
+	popup->setLayout(layout);
+	popup->resize(550, 500);
+	popup->exec();
+	return 0;
+}
+
+
+/*
 int Gui::displayWatchlist()
 {
 	QDialog* popup = new QDialog();
@@ -494,6 +553,8 @@ int Gui::displayWatchlist()
 	table->show();
 	return popup->exec();
 }
+*/
+
 
 int Gui::saveWatchlistToFile()
 {
@@ -663,3 +724,31 @@ void Gui::handleAdminMode()
 	}
 
 }
+
+void Gui::UndoButtonClicked()
+{
+	try
+	{
+		this->adminService.executeUndo();
+		
+	}
+	catch (FileException& e)
+	{
+		QMessageBox::critical(nullptr, "Error", e.what());
+
+	}
+
+}
+
+void Gui::RedoButtonClicked()
+{
+	try
+	{
+		this->adminService.executeRedo();
+	}
+	catch (FileException& e)
+	{
+		QMessageBox::critical(nullptr, "Error", e.what());
+	}
+}
+
